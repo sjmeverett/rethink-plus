@@ -1,6 +1,6 @@
 # RethinkPlus
 
-This is a simple wrapper (~70 lines of code) over the standard RethinkDB driver.  It mostly just adds connection pooling.
+This is a simple wrapper (~130 lines of code) over the standard RethinkDB driver.  It mostly just adds connection pooling.
 
 ## Installation
 
