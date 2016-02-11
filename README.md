@@ -82,6 +82,45 @@ let db = new RethinkPlus({/** connection options **/, autoToArray: true});
 let docs = await db.table('test');
 ```
 
+
+## Plugins
+
+You can pass an array of plugins to the constructor.  A plugin should be a function which possibly modifies its parameter, which is an object.  The plugin functions are called for every function call.
+
+### Example
+
+Let's say you wanted to modify the `filter` function.  You could define a plugin like this:
+
+```js
+function filterPlugin(receiver) {
+  if (receiver.filter) {
+    var _filter = receiver.filter;
+
+    receiver.filter = function () {
+      // do something cool...
+
+      // and then:
+      return _filter.apply(receiver, arguments);
+    };
+  }
+}
+```
+
+This can be used like so:
+
+```js
+let db = new RethinkPlus({/** connection options **/, plugins: [filterPlugin]});
+```
+
+Or, if you want it to be used for all instances:
+
+```js
+RethinkPlus.plugins.push(filterPlugin);
+
+let db = new RethinkPlus({/** connection options **/});
+// db will use the filterPlugin
+```
+
 ## Licence etc
 
 This project is ISC licensed - do whatever you like.  Comments, pull requests, and bug reports are all welcome!  Thanks for your time.

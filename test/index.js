@@ -123,4 +123,16 @@ describe('RethinkPlus', function () {
         expect(docs).to.have.length(1);
       });
   });
+
+
+  it('should support plugins', function () {
+    function plugin(receiver) {
+      receiver.test = function () { return 'test' };
+    }
+
+    db = new RethinkPlus({db: 'testrethinkplus', plugins: [plugin]});
+
+    var table = db.table('test');
+    expect(table.test()).to.equal('test');
+  });
 });

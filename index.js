@@ -24,7 +24,11 @@ function Database(options) {
 
     return fn;
   });
+
+  this.plugins = options.plugins || Database.plugins;
 }
+
+Database.plugins = [];
 
 
 function wrapfn(db, receiver, fn) {
@@ -100,7 +104,7 @@ function maybeCallback(promise, callback) {
 function promisify(db, receiver) {
   receiver._run = receiver.run;
 
-  return objMap(receiver, function (k, fn) {
+  objMap(receiver, function (k, fn) {
     if (typeof fn === 'function' && !k.startsWith('_')) {
       if (k === 'run') {
         return runfn(db, receiver);
@@ -111,6 +115,12 @@ function promisify(db, receiver) {
       return fn;
     }
   });
+
+  for (var i in db.plugins) {
+    db.plugins[i](receiver);
+  }
+
+  return receiver;
 }
 
 
