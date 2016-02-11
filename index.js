@@ -33,19 +33,8 @@ function wrapfn(db, receiver, fn) {
 
     if (result.run) {
       result.then = function () {
-        var p = db.pool
-          .acquire(function (connection) {
-            return result.run(connection);
-          })
-          .then(function (result) {
-            if (result && result.toArray && db.options.autoToArray) {
-              return result.toArray();
-            } else {
-              return result;
-            }
-          });
-
-        return p.then.apply(p, arguments);
+        var promise = result.run();
+        return promise.then.apply(promise, arguments);
       };
     }
 
@@ -54,10 +43,50 @@ function wrapfn(db, receiver, fn) {
 }
 
 
+function runfn(db, receiver) {
+  return function (options, callback) {
+    if (!callback) { callback = options; options = void 0; }
+
+    var promise = db.pool
+      .acquire(function (connection) {
+        return receiver._run(connection, options);
+      })
+      .then(function (result) {
+        if (result && result.toArray && db.options.autoToArray) {
+          return result.toArray();
+        } else {
+          return result;
+        }
+      });
+
+    if (callback) {
+      promise
+        .then(
+          function (result) {
+            callback(null, result);
+          },
+          function (error) {
+            callback(error);
+          }
+        );
+
+    } else {
+      return promise;
+    }
+  };
+}
+
+
 function promisify(db, receiver) {
+  receiver._run = receiver.run;
+
   return objMap(receiver, function (k, fn) {
-    if (k !== 'run' && typeof fn === 'function') {
-      return wrapfn(db, receiver, fn);
+    if (typeof fn === 'function' && !k.startsWith('_')) {
+      if (k === 'run') {
+        return runfn(db, receiver);
+      } else {
+        return wrapfn(db, receiver, fn);
+      }
     } else {
       return fn;
     }
