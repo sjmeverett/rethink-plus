@@ -1,6 +1,6 @@
 {
   "name": "rethink-plus",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "The RethinkDB interface you know with connection pooling and slightly easier usage.",
   "main": "index.js",
   "scripts": {

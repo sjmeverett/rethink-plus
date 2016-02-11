@@ -121,6 +121,8 @@ let db = new RethinkPlus({/** connection options **/});
 // db will use the filterPlugin
 ```
 
+The experimental [rethink-filter-parser](https://www.npmjs.com/package/rethink-filter-parser) is the only such plugin at the moment.
+
 ## Licence etc
 
 This project is ISC licensed - do whatever you like.  Comments, pull requests, and bug reports are all welcome!  Thanks for your time.

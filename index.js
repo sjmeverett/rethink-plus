@@ -25,7 +25,7 @@ function Database(options) {
     return fn;
   });
 
-  this.plugins = options.plugins || Database.plugins;
+  this.plugins = this.options.plugins || Database.plugins;
 }
 
 Database.plugins = [];
