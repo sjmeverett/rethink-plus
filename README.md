@@ -39,7 +39,7 @@ let table = db.table('test');
 let doc = await table.get('07290fa5-1691-430c-a397-111575370881');
 ```
 
-If, for some weird reason, you wanted to use the callback interface like it was 2014, you could do that too:
+If you wanted to use the callback interface like it was 2014, you could do that too:
 
 ```js
 db
@@ -58,3 +58,30 @@ import RethinkPlus, {r} from 'rethink-plus';
 let people = db.table('people');
 let adults = await people.filter(r.row('age').gt(16));
 ```
+
+
+### Cursors
+
+For convenience, there's an extra `toArray()` method.  Without it, if you wanted to get an array of all the documents, you'd have to do something like this:
+
+```js
+let cursor = await table;
+let docs = await cursor.toArray();
+```
+
+However, I've monkey-patched it:
+
+```js
+let docs = await table.toArray();
+```
+
+If you have no need for cursors in your project, you can instruct the driver to always convert cursors to arrays for you:
+
+```js
+let db = new RethinkPlus({/** connection options **/, autoToArray: true});
+let docs = await db.table('test');
+```
+
+## Licence etc
+
+This project is ISC licensed - do whatever you like.  Comments, pull requests, and bug reports are all welcome!  Thanks for your time.

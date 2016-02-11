@@ -71,6 +71,23 @@ describe('RethinkPlus', function () {
   });
 
 
+  it('should have a toArray() method', function () {
+    var table = db.table('test');
+
+    return table
+      .insert([
+        {a: 1},
+        {b: 2}
+      ])
+      .then(function () {
+        return table.toArray();
+      })
+      .then(function (docs) {
+        expect(docs).to.have.length(2);
+      });
+  });
+
+
   it('should auto convert cursors if requested', function () {
     db = new RethinkPlus({db: 'testrethinkplus', autoToArray: true});
     var table = db.table('test');

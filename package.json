@@ -1,7 +1,7 @@
 {
   "name": "rethink-plus",
-  "version": "0.1.0",
-  "description": "Adds connection pooling to rethinkdb",
+  "version": "0.2.0",
+  "description": "The RethinkDB interface you know with connection pooling and slightly easier usage.",
   "main": "index.js",
   "scripts": {
     "test": "mocha"

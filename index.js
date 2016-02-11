@@ -36,6 +36,21 @@ function wrapfn(db, receiver, fn) {
         var promise = result.run();
         return promise.then.apply(promise, arguments);
       };
+
+      // slight hack...?
+      if (!db.options.autoToArray) {
+        result.toArray = function (callback) {
+          var promise = result.then(function (cursor) {
+            if (cursor && cursor.toArray) {
+              return cursor.toArray();
+            } else {
+              throw new Error('called toArray() on a non-cursor');
+            }
+          });
+
+          return maybeCallback(promise, callback);
+        };
+      }
     }
 
     return result;
@@ -59,21 +74,26 @@ function runfn(db, receiver) {
         }
       });
 
-    if (callback) {
-      promise
-        .then(
-          function (result) {
-            callback(null, result);
-          },
-          function (error) {
-            callback(error);
-          }
-        );
-
-    } else {
-      return promise;
-    }
+    return maybeCallback(promise, callback);
   };
+}
+
+
+function maybeCallback(promise, callback) {
+  if (callback) {
+    promise
+      .then(
+        function (result) {
+          callback(null, result);
+        },
+        function (error) {
+          callback(error);
+        }
+      );
+
+  } else {
+    return promise;
+  }
 }
 
 
