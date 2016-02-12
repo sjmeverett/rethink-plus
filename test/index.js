@@ -88,6 +88,23 @@ describe('RethinkPlus', function () {
   });
 
 
+  it('should have a firstOrDefault() method', function () {
+    var table = db.table('test');
+
+    return table
+      .insert([
+        {a: 1},
+        {b: 2}
+      ])
+      .then(function () {
+        return table.filter(function (x) { return x.hasFields('a'); }).firstOrDefault();
+      })
+      .then(function (doc) {
+        expect(doc.a).to.equal(1);
+      });
+  });
+
+
   it('should auto convert cursors if requested', function () {
     db = new RethinkPlus({db: 'testrethinkplus', autoToArray: true});
     var table = db.table('test');

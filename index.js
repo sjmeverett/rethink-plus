@@ -1,4 +1,6 @@
 
+var arrayPlugin = require('./lib/arrayPlugin');
+var maybeCallback = require('./lib/maybeCallback');
 var pool = require('generic-promise-pool');
 var r = require('rethinkdb');
 var Symbol = require('es6-symbol');
@@ -19,14 +21,20 @@ function Database(options) {
   });
 
   this.options = options || {};
-  this.plugins = this.options.plugins || Database.plugins;
+  this.plugins = [];
+  this.plugins.push.apply(this.plugins, Database.plugins);
+
+  if (this.options.plugins)
+    this.plugins.push.apply(this.plugins, options.plugins);
 
   wrap(this, r, this);
 }
 
-Database.plugins = [];
+
+Database.plugins = [arrayPlugin];
 Database.prototype.runSymbol = runSymbol;
 Database.prototype.stateSymbol = stateSymbol;
+
 
 
 function wrapfn(db, receiver, fn) {
@@ -39,21 +47,6 @@ function wrapfn(db, receiver, fn) {
         var promise = result.run();
         return promise.then.apply(promise, arguments);
       };
-
-      // slight hack...?
-      if (!db.options.autoToArray) {
-        result.toArray = function (callback) {
-          var promise = result.then(function (cursor) {
-            if (cursor && cursor.toArray) {
-              return cursor.toArray();
-            } else {
-              throw new Error('called toArray() on a non-cursor');
-            }
-          });
-
-          return maybeCallback(promise, callback);
-        };
-      }
     }
 
     return result;
@@ -79,24 +72,6 @@ function runfn(db, receiver) {
 
     return maybeCallback(promise, callback);
   };
-}
-
-
-function maybeCallback(promise, callback) {
-  if (callback) {
-    promise
-      .then(
-        function (result) {
-          callback(null, result);
-        },
-        function (error) {
-          callback(error);
-        }
-      );
-
-  } else {
-    return promise;
-  }
 }
 
 
@@ -130,6 +105,7 @@ function objEach(obj, fn) {
     fn(k, obj[k]);
   }
 }
+
 
 module.exports = Database;
 module.exports.r = r;

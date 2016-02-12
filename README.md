@@ -1,6 +1,6 @@
 # RethinkPlus
 
-This is a simple wrapper (~130 lines of code) over the standard RethinkDB driver.  It mostly just adds connection pooling.
+This is a simple wrapper (< 200 lines of code) over the standard RethinkDB driver.  It mostly just adds connection pooling.
 
 ## Installation
 
@@ -82,6 +82,15 @@ let db = new RethinkPlus({/** connection options **/, autoToArray: true});
 let docs = await db.table('test');
 ```
 
+There are also the following helper methods:
+
+ * `first()` - return the first element or throw an exception
+ * `first(defaultValue)` - return the first element or a default value
+ * `single()` - return the only document or throw an exception
+ * `singleOrDefault(defaultValue)` - return the only document or a default value
+
+These are inspired by the `IEnumerable<T>` methods in the CLR.
+
 
 ## Plugins
 
@@ -121,7 +130,7 @@ let db = new RethinkPlus({/** connection options **/});
 // db will use the filterPlugin
 ```
 
-The experimental [rethink-filter-parser](https://www.npmjs.com/package/rethink-filter-parser) is the only such plugin at the moment.
+The experimental [rethink-filter-parser](https://www.npmjs.com/package/rethink-filter-parser) is the only such external plugin at the moment, but the extra cursor functions described above are implemented with a default plugin.
 
 ## Licence etc
 
