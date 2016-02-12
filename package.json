@@ -25,6 +25,7 @@
   },
   "homepage": "https://github.com/stewartml/rethink-plus#readme",
   "dependencies": {
+    "es6-symbol": "^3.0.2",
     "generic-promise-pool": "^1.1.0",
     "rethinkdb": "^2.2.1"
   },

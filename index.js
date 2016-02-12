@@ -1,6 +1,10 @@
 
 var pool = require('generic-promise-pool');
 var r = require('rethinkdb');
+var Symbol = require('es6-symbol');
+
+var runSymbol = Symbol('_run');
+var stateSymbol = Symbol('state');
 
 
 function Database(options) {
@@ -15,25 +19,20 @@ function Database(options) {
   });
 
   this.options = options || {};
-  var _this = this;
-
-  objMap(r, function (k, fn) {
-    if (typeof fn === 'function') {
-      _this[k] = wrapfn(_this, r, fn);
-    }
-
-    return fn;
-  });
-
   this.plugins = this.options.plugins || Database.plugins;
+
+  wrap(this, r, this);
 }
 
 Database.plugins = [];
+Database.prototype.runSymbol = runSymbol;
+Database.prototype.stateSymbol = stateSymbol;
 
 
 function wrapfn(db, receiver, fn) {
   return function () {
-    var result = promisify(db, fn.apply(receiver, arguments));
+    var result = wrap(db, fn.apply(receiver, arguments));
+    result[stateSymbol] = receiver[stateSymbol] || {};
 
     if (result.run) {
       result.then = function () {
@@ -68,7 +67,7 @@ function runfn(db, receiver) {
 
     var promise = db.pool
       .acquire(function (connection) {
-        return receiver._run(connection, options);
+        return receiver[runSymbol](connection, options);
       })
       .then(function (result) {
         if (result && result.toArray && db.options.autoToArray) {
@@ -101,35 +100,35 @@ function maybeCallback(promise, callback) {
 }
 
 
-function promisify(db, receiver) {
-  receiver._run = receiver.run;
+function wrap(db, receiver, target) {
+  if (!target)
+    target = receiver;
 
-  objMap(receiver, function (k, fn) {
-    if (typeof fn === 'function' && !k.startsWith('_')) {
+  if (receiver.run)
+    target[runSymbol] = receiver.run;
+
+  objEach(receiver, function (k, fn) {
+    if (typeof fn === 'function' && k != runSymbol) {
       if (k === 'run') {
-        return runfn(db, receiver);
+        target[k] = runfn(db, receiver);
       } else {
-        return wrapfn(db, receiver, fn);
+        target[k] = wrapfn(db, receiver, fn);
       }
-    } else {
-      return fn;
     }
   });
 
   for (var i in db.plugins) {
-    db.plugins[i](receiver);
+    db.plugins[i].call(db, receiver);
   }
 
   return receiver;
 }
 
 
-function objMap(obj, fn) {
+function objEach(obj, fn) {
   for (var k in obj) {
-    obj[k] = fn(k, obj[k]);
+    fn(k, obj[k]);
   }
-
-  return obj;
 }
 
 module.exports = Database;
